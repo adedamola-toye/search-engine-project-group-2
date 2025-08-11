@@ -18,7 +18,7 @@ public class SQLDocumentRepository : IDocumentRepository
 
     public async Task<Document> UploadDocumentAsync(Document document)
     {
-        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(document.File.FileName);
+        var uniqueFileName = Guid.NewGuid() + Path.GetExtension(document.File.FileName);
         var filePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Uploads", uniqueFileName);
         using (var stream = new FileStream(filePath, FileMode.Create))
         await document.File.CopyToAsync(stream);
