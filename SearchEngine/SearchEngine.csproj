@@ -23,6 +23,7 @@
       <Folder Include="Models\Domain\" />
       <Folder Include="Models\DTO\" />
       <Folder Include="Repositories\" />
+      <Folder Include="Uploads\" />
     </ItemGroup>
 
 </Project>

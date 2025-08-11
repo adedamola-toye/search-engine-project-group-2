@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SearchEngine.Models.Domain;
 
@@ -8,30 +8,21 @@ namespace SearchEngine.Models.Domain;
 /// </summary>
 public class Document
 {
-    [Key]
     public Guid Id { get; set; }
+
+    [NotMapped]
+    public IFormFile File { get; set; }
     
-    [Required]
-    [MaxLength(500)]
     public string FileName { get; set; } = string.Empty;
     
-    [Required]
-    [MaxLength(1000)]
     public string FilePath { get; set; } = string.Empty;
     
-    [Required]
-    [MaxLength(20)]
     public string FileType { get; set; } = string.Empty; // pdf, doc, docx, ppt, ppts, xls, xlsx, txt, html, xml
     
     public long FileSizeBytes { get; set; }
-    
-    
     public DateTime CreatedAt { get; set; }
-    
     public DateTime UpdatedAt { get; set; }
-    
     public DateTime IndexedAt { get; set; }
-    
     public bool IsIndexed { get; set; } = false;
     
     // Navigation properties
