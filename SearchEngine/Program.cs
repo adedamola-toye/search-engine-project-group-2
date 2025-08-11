@@ -1,5 +1,6 @@
 using SearchEngine.Data;
 using SearchEngine.Repositories;
+using SearchEngine.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Builder;
@@ -20,7 +21,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<SearchEngineDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SearchEngineConnectionString")));
 
+// Register repositories
 builder.Services.AddScoped<IDocumentRepository, SQLDocumentRepository>();
+builder.Services.AddScoped<IDocumentKeywordRepository, SQLDocumentKeywordRepository>();
+
+// Register services
+builder.Services.AddScoped<IDocumentProcessingService, DocumentProcessingService>();
 
 var app = builder.Build();
 
