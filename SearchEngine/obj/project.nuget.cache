@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "gRjRj8NY44Q=",
+  "success": true,
+  "projectFilePath": "/Users/rhedwan/Documents/search-engine-csc322-group-2/SearchEngine/SearchEngine.csproj",
+  "expectedPackageFiles": [
+    "/Users/rhedwan/.nuget/packages/microsoft.aspnetcore.openapi/9.0.7/microsoft.aspnetcore.openapi.9.0.7.nupkg.sha512",
+    "/Users/rhedwan/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
