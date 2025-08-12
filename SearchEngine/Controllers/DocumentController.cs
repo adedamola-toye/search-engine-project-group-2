@@ -17,11 +17,13 @@ public class DocumentController : ControllerBase
     public DocumentController(
         IDocumentRepository documentRepository,
         IDocumentKeywordRepository documentKeywordRepository,
-        IDocumentProcessingService documentProcessingService)
+        IDocumentProcessingService documentProcessingService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _documentRepository = documentRepository;
         _documentKeywordRepository = documentKeywordRepository;
         _documentProcessingService = documentProcessingService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     [HttpPost]
@@ -56,20 +58,21 @@ public class DocumentController : ControllerBase
             }
 
             var uniqueFileName = $"{document.Id}_{request.File.FileName}";
-            var filePath =  $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}{_httpContextAccessor.HttpContext.Request.PathBase}/Uploads/{uniqueFileName}";
+            var physicalFilePath = Path.Combine(uploadsFolder, uniqueFileName);
+            var urlPath = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}{_httpContextAccessor.HttpContext.Request.PathBase}/Uploads/{uniqueFileName}";
             
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(physicalFilePath, FileMode.Create))
             {
                 await request.File.CopyToAsync(stream);
             }
 
-            document.FilePath = filePath;
+            document.FilePath = urlPath;
 
             // Save document to database
             await _documentRepository.UploadDocumentAsync(document);
 
             // Process document with IronWord to extract keywords
-            var documentKeywords = await _documentProcessingService.ProcessDocumentAsync(document, filePath);
+            var documentKeywords = await _documentProcessingService.ProcessDocumentAsync(document, physicalFilePath);
 
             // Save keywords to database
             await _documentKeywordRepository.AddDocumentKeywordsAsync(documentKeywords);
@@ -144,20 +147,7 @@ public class DocumentController : ControllerBase
                 CreatedAt = doc.CreatedAt,
                 UpdatedAt = doc.UpdatedAt,
                 IndexedAt = doc.IndexedAt,
-                IsIndexed = doc.IsIndexed,
-                DocumentKeywords = doc.DocumentKeywords?.Select(dk => new DocumentKeywordDto
-                {
-                    Id = dk.Id,
-                    DocumentId = dk.DocumentId,
-                    Term = dk.Term,
-                    NormalizedTerm = dk.NormalizedTerm,
-                    Frequency = dk.Frequency,
-                    TermFrequency = dk.TermFrequency,
-                    InverseDocumentFrequency = dk.InverseDocumentFrequency,
-                    TfIdfScore = dk.TfIdfScore,
-                    CreatedAt = dk.CreatedAt,
-                    UpdatedAt = dk.UpdatedAt
-                }).ToList() ?? new List<DocumentKeywordDto>()
+                IsIndexed = doc.IsIndexed
             }).ToList();
             
             return Ok(documentDtos);
@@ -191,20 +181,7 @@ public class DocumentController : ControllerBase
                 CreatedAt = document.CreatedAt,
                 UpdatedAt = document.UpdatedAt,
                 IndexedAt = document.IndexedAt,
-                IsIndexed = document.IsIndexed,
-                DocumentKeywords = document.DocumentKeywords?.Select(dk => new DocumentKeywordDto
-                {
-                    Id = dk.Id,
-                    DocumentId = dk.DocumentId,
-                    Term = dk.Term,
-                    NormalizedTerm = dk.NormalizedTerm,
-                    Frequency = dk.Frequency,
-                    TermFrequency = dk.TermFrequency,
-                    InverseDocumentFrequency = dk.InverseDocumentFrequency,
-                    TfIdfScore = dk.TfIdfScore,
-                    CreatedAt = dk.CreatedAt,
-                    UpdatedAt = dk.UpdatedAt
-                }).ToList() ?? new List<DocumentKeywordDto>()
+                IsIndexed = document.IsIndexed
             };
             
             return Ok(documentDto);
