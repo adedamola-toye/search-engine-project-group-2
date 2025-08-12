@@ -131,7 +131,35 @@ public class DocumentController : ControllerBase
         try
         {
             var documents = await _documentRepository.GetAllDocumentsAsync();
-            return Ok(documents);
+            
+            // Convert to DTOs to avoid circular references
+            var documentDtos = documents.Select(doc => new DocumentResponseDto
+            {
+                Id = doc.Id,
+                FileName = doc.FileName,
+                FilePath = doc.FilePath,
+                FileType = doc.FileType,
+                FileSizeBytes = doc.FileSizeBytes,
+                CreatedAt = doc.CreatedAt,
+                UpdatedAt = doc.UpdatedAt,
+                IndexedAt = doc.IndexedAt,
+                IsIndexed = doc.IsIndexed,
+                DocumentKeywords = doc.DocumentKeywords?.Select(dk => new DocumentKeywordDto
+                {
+                    Id = dk.Id,
+                    DocumentId = dk.DocumentId,
+                    Term = dk.Term,
+                    NormalizedTerm = dk.NormalizedTerm,
+                    Frequency = dk.Frequency,
+                    TermFrequency = dk.TermFrequency,
+                    InverseDocumentFrequency = dk.InverseDocumentFrequency,
+                    TfIdfScore = dk.TfIdfScore,
+                    CreatedAt = dk.CreatedAt,
+                    UpdatedAt = dk.UpdatedAt
+                }).ToList() ?? new List<DocumentKeywordDto>()
+            }).ToList();
+            
+            return Ok(documentDtos);
         }
         catch (Exception ex)
         {
@@ -150,7 +178,35 @@ public class DocumentController : ControllerBase
             {
                 return NotFound(new { error = "Document not found" });
             }
-            return Ok(document);
+            
+            // Convert to DTO to avoid circular references
+            var documentDto = new DocumentResponseDto
+            {
+                Id = document.Id,
+                FileName = document.FileName,
+                FilePath = document.FilePath,
+                FileType = document.FileType,
+                FileSizeBytes = document.FileSizeBytes,
+                CreatedAt = document.CreatedAt,
+                UpdatedAt = document.UpdatedAt,
+                IndexedAt = document.IndexedAt,
+                IsIndexed = document.IsIndexed,
+                DocumentKeywords = document.DocumentKeywords?.Select(dk => new DocumentKeywordDto
+                {
+                    Id = dk.Id,
+                    DocumentId = dk.DocumentId,
+                    Term = dk.Term,
+                    NormalizedTerm = dk.NormalizedTerm,
+                    Frequency = dk.Frequency,
+                    TermFrequency = dk.TermFrequency,
+                    InverseDocumentFrequency = dk.InverseDocumentFrequency,
+                    TfIdfScore = dk.TfIdfScore,
+                    CreatedAt = dk.CreatedAt,
+                    UpdatedAt = dk.UpdatedAt
+                }).ToList() ?? new List<DocumentKeywordDto>()
+            };
+            
+            return Ok(documentDto);
         }
         catch (Exception ex)
         {
