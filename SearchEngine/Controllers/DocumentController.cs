@@ -12,6 +12,7 @@ public class DocumentController : ControllerBase
     private readonly IDocumentRepository _documentRepository;
     private readonly IDocumentKeywordRepository _documentKeywordRepository;
     private readonly IDocumentProcessingService _documentProcessingService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public DocumentController(
         IDocumentRepository documentRepository,
@@ -55,7 +56,7 @@ public class DocumentController : ControllerBase
             }
 
             var uniqueFileName = $"{document.Id}_{request.File.FileName}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            var filePath =  $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}{_httpContextAccessor.HttpContext.Request.PathBase}/Uploads/{uniqueFileName}";
             
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
