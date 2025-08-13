@@ -35,7 +35,7 @@ public class SQLDocumentKeywordRepository : IDocumentKeywordRepository
     {
         return await _dbContext.DocumentKeywords
             .Where(dk => dk.DocumentId == documentId)
-            .OrderByDescending(dk => dk.TfIdfScore)
+            .OrderByDescending(dk => dk.TermFrequency)
             .ToListAsync();
     }
 
@@ -52,46 +52,11 @@ public class SQLDocumentKeywordRepository : IDocumentKeywordRepository
         return await _dbContext.DocumentKeywords
             .Include(dk => dk.Document)
             .Where(dk => normalizedKeywords.Contains(dk.NormalizedTerm))
-            .OrderByDescending(dk => dk.TfIdfScore)
+            .OrderByDescending(dk => dk.TermFrequency)
             .ToListAsync();
     }
 
-    /// <summary>
-    /// Updates TF-IDF scores for all document keywords
-    /// </summary>
-    public async Task UpdateTfIdfScoresAsync()
-    {
-        // Get total number of documents
-        var totalDocuments = await _dbContext.Documents.CountAsync();
-        
-        if (totalDocuments == 0)
-            return;
 
-        // Get all unique normalized terms with their document counts
-        var termDocumentCounts = await _dbContext.DocumentKeywords
-            .GroupBy(dk => dk.NormalizedTerm)
-            .Select(g => new { Term = g.Key, DocumentCount = g.Count() })
-            .ToListAsync();
-
-        // Update IDF and TF-IDF scores
-        foreach (var termInfo in termDocumentCounts)
-        {
-            var idf = Math.Log((double)totalDocuments / termInfo.DocumentCount);
-            
-            var keywordsToUpdate = await _dbContext.DocumentKeywords
-                .Where(dk => dk.NormalizedTerm == termInfo.Term)
-                .ToListAsync();
-
-            foreach (var keyword in keywordsToUpdate)
-            {
-                keyword.InverseDocumentFrequency = idf;
-                keyword.TfIdfScore = keyword.TermFrequency * idf;
-                keyword.UpdatedAt = DateTime.UtcNow;
-            }
-        }
-
-        await _dbContext.SaveChangesAsync();
-    }
 
     /// <summary>
     /// Deletes all keywords for a specific document

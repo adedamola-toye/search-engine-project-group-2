@@ -26,10 +26,6 @@ public class DocumentKeyword
     
     public double TermFrequency { get; set; } // TF score (frequency / total words in document)
     
-    public double InverseDocumentFrequency { get; set; } // IDF score (calculated across all documents)
-    
-    public double TfIdfScore { get; set; } // TF-IDF score for ranking
-    
     public DateTime CreatedAt { get; set; }
     
     public DateTime UpdatedAt { get; set; }

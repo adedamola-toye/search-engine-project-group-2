@@ -27,12 +27,7 @@ public interface IDocumentKeywordRepository
     /// <returns>List of DocumentKeyword entities matching the search</returns>
     Task<List<DocumentKeyword>> SearchByKeywordsAsync(List<string> keywords);
     
-    /// <summary>
-    /// Updates TF-IDF scores for all document keywords
-    /// This should be called after adding new documents to recalculate IDF scores
-    /// </summary>
-    Task UpdateTfIdfScoresAsync();
-    
+
     /// <summary>
     /// Deletes all keywords for a specific document
     /// </summary>

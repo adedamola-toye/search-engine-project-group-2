@@ -90,8 +90,6 @@ public class DocumentProcessingService : IDocumentProcessingService
                     NormalizedTerm = keyword.ToLowerInvariant(),
                     Frequency = frequency,
                     TermFrequency = termFrequency,
-                    InverseDocumentFrequency = 0, // Will be calculated later when we know total document count
-                    TfIdfScore = 0, // Will be calculated after IDF
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -105,6 +103,32 @@ public class DocumentProcessingService : IDocumentProcessingService
         {
             throw new InvalidOperationException($"Failed to process document {document.FileName}: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Creates inverted index entries from document keywords
+    /// </summary>
+    public List<InvertedIndexEntry> CreateInvertedIndexEntries(List<DocumentKeyword> documentKeywords)
+    {
+        var invertedIndexEntries = new List<InvertedIndexEntry>();
+        
+        foreach (var documentKeyword in documentKeywords)
+        {
+            var entry = new InvertedIndexEntry
+            {
+                Id = Guid.NewGuid(),
+                DocumentKeywordId = documentKeyword.Id,
+                NormalizedTerm = documentKeyword.NormalizedTerm,
+                InverseDocumentFrequency = 0, // Will be calculated later
+                TfIdfScore = 0, // Will be calculated later
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            
+            invertedIndexEntries.Add(entry);
+        }
+        
+        return invertedIndexEntries;
     }
 
     /// <summary>

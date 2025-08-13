@@ -29,6 +29,7 @@ builder.Services.AddDbContext<SearchEngineDBContext>(options =>
 // Register repositories
 builder.Services.AddScoped<IDocumentRepository, SQLDocumentRepository>();
 builder.Services.AddScoped<IDocumentKeywordRepository, SQLDocumentKeywordRepository>();
+builder.Services.AddScoped<IInvertedIndexRepository, SQLInvertedIndexRepository>();
 
 // Register services
 builder.Services.AddScoped<IDocumentProcessingService, DocumentProcessingService>();

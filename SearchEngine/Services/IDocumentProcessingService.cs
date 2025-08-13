@@ -29,4 +29,11 @@ public interface IDocumentProcessingService
     /// <param name="text">Text content to analyze</param>
     /// <returns>Dictionary of keywords with their frequencies</returns>
     Dictionary<string, int> ExtractKeywords(string text);
+    
+    /// <summary>
+    /// Creates inverted index entries from document keywords
+    /// </summary>
+    /// <param name="documentKeywords">List of DocumentKeyword entities</param>
+    /// <returns>List of InvertedIndexEntry entities</returns>
+    List<InvertedIndexEntry> CreateInvertedIndexEntries(List<DocumentKeyword> documentKeywords);
 }

@@ -11,17 +11,20 @@ public class DocumentController : ControllerBase
 {
     private readonly IDocumentRepository _documentRepository;
     private readonly IDocumentKeywordRepository _documentKeywordRepository;
+    private readonly IInvertedIndexRepository _invertedIndexRepository;
     private readonly IDocumentProcessingService _documentProcessingService;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public DocumentController(
         IDocumentRepository documentRepository,
         IDocumentKeywordRepository documentKeywordRepository,
+        IInvertedIndexRepository invertedIndexRepository,
         IDocumentProcessingService documentProcessingService,
         IHttpContextAccessor httpContextAccessor)
     {
         _documentRepository = documentRepository;
         _documentKeywordRepository = documentKeywordRepository;
+        _invertedIndexRepository = invertedIndexRepository;
         _documentProcessingService = documentProcessingService;
         _httpContextAccessor = httpContextAccessor;
     }
@@ -77,8 +80,12 @@ public class DocumentController : ControllerBase
             // Save keywords to database
             await _documentKeywordRepository.AddDocumentKeywordsAsync(documentKeywords);
 
-            // Update TF-IDF scores for all keywords
-            await _documentKeywordRepository.UpdateTfIdfScoresAsync();
+            // Create inverted index entries
+            var invertedIndexEntries = _documentProcessingService.CreateInvertedIndexEntries(documentKeywords);
+            await _invertedIndexRepository.AddInvertedIndexEntriesAsync(invertedIndexEntries);
+
+            // Update TF-IDF scores for all inverted index entries
+            await _invertedIndexRepository.UpdateTfIdfScoresAsync();
 
             // Mark document as indexed
             document.IsIndexed = true;
@@ -206,12 +213,12 @@ public class DocumentController : ControllerBase
             // Split query into keywords
             var keywords = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
             
-            // Search for documents containing these keywords
-            var documentKeywords = await _documentKeywordRepository.SearchByKeywordsAsync(keywords);
+            // Search for documents containing these keywords using inverted index
+            var invertedIndexEntries = await _invertedIndexRepository.SearchByKeywordsAsync(keywords);
             
             // Group by document and calculate relevance scores
-            var searchResults = documentKeywords
-                .GroupBy(dk => dk.Document)
+            var searchResults = invertedIndexEntries
+                .GroupBy(ie => ie.DocumentKeyword.Document)
                 .Select(g => new
                 {
                     Document = new
@@ -223,13 +230,13 @@ public class DocumentController : ControllerBase
                         g.Key.CreatedAt,
                         g.Key.IsIndexed
                     },
-                    MatchedKeywords = g.Select(dk => new
+                    MatchedKeywords = g.Select(ie => new
                     {
-                        dk.Term,
-                        dk.Frequency,
-                        dk.TfIdfScore
+                        ie.DocumentKeyword.Term,
+                        ie.DocumentKeyword.Frequency,
+                        ie.TfIdfScore
                     }).ToList(),
-                    TotalRelevanceScore = g.Sum(dk => dk.TfIdfScore),
+                    TotalRelevanceScore = g.Sum(ie => ie.TfIdfScore),
                     KeywordMatches = g.Count()
                 })
                 .OrderByDescending(r => r.TotalRelevanceScore)

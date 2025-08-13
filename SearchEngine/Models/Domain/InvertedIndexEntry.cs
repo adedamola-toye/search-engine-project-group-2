@@ -19,6 +19,8 @@ public class InvertedIndexEntry
     [MaxLength(100)]
     public string NormalizedTerm { get; set; } = string.Empty; // The search term (normalized for fast lookup)
     
+    public double InverseDocumentFrequency { get; set; } // IDF score (calculated across all documents)
+    
     public double TfIdfScore { get; set; } // Pre-calculated TF-IDF score for fast ranking
     
     public DateTime CreatedAt { get; set; }
